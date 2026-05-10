@@ -22,6 +22,14 @@ Terminá siempre con una pregunta simple para acompañar.
 """
 
 
+FALLBACK_SHORT_RESPONSE = (
+    "Entiendo que esto puede sentirse pesado. No tenés que resolver todo ahora; "
+    "podemos empezar por poner en palabras qué es lo que más te está afectando. "
+    "A veces ordenar lo que pasó ya baja un poco la carga. "
+    "¿Querés contarme qué fue lo más difícil de tu día?"
+)
+
+
 def _extract_text(response):
     """Extrae texto de Gemini de forma tolerante."""
     try:
@@ -39,7 +47,41 @@ def _extract_text(response):
 
 
 def _is_too_short(text):
-    return len(text.strip()) < 80
+    return len(text.strip()) < 120
+
+
+def _looks_incomplete(text):
+    cleaned = text.strip()
+
+    if not cleaned:
+        return True
+
+    if cleaned[-1] in ".!?¿¡":
+        return False
+
+    incomplete_endings = (
+        " de",
+        " que",
+        " con",
+        " para",
+        " por",
+        " en",
+        " y",
+        " o",
+        " como",
+        " intentar",
+        " porque",
+        " pero",
+    )
+
+    return cleaned.lower().endswith(incomplete_endings)
+
+
+def _normalize_response(text):
+    if _is_too_short(text) or _looks_incomplete(text):
+        return FALLBACK_SHORT_RESPONSE
+
+    return text.strip()
 
 
 def ask_gemini(message):
@@ -62,7 +104,7 @@ def ask_gemini(message):
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
                 temperature=0.4,
-                max_output_tokens=320,
+                max_output_tokens=420,
             ),
         )
 
@@ -74,13 +116,7 @@ def ask_gemini(message):
         if not response_text:
             return "No pude generar una respuesta en este momento."
 
-        if _is_too_short(response_text):
-            return (
-                response_text
-                + " Entiendo que esto puede sentirse pesado. No tenés que resolver todo ahora; podemos empezar por poner en palabras qué es lo que más te está afectando. ¿Querés contarme qué pasó hoy?"
-            )
-
-        return response_text
+        return _normalize_response(response_text)
 
     except Exception as error:
         error_text = str(error)
