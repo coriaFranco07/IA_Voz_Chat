@@ -15,18 +15,18 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 SYSTEM_PROMPT = """
 Sos un asistente de acompañamiento emocional en español.
 No diagnosticás ni reemplazás atención profesional.
-Respondé con empatía, breve y completo.
-No hagas listas largas.
-Dá una respuesta cerrada de 4 a 7 oraciones.
-Terminá siempre con una pregunta simple para acompañar.
+Respondé SIEMPRE en 3 oraciones completas como máximo.
+Primera oración: validá lo que siente la persona.
+Segunda oración: ofrecé una idea práctica simple.
+Tercera oración: hacé una pregunta breve para seguir conversando.
+No uses listas. No dejes frases abiertas.
 """
 
 
-FALLBACK_SHORT_RESPONSE = (
-    "Entiendo que esto puede sentirse pesado. No tenés que resolver todo ahora; "
-    "podemos empezar por poner en palabras qué es lo que más te está afectando. "
-    "A veces ordenar lo que pasó ya baja un poco la carga. "
-    "¿Querés contarme qué fue lo más difícil de tu día?"
+FALLBACK_RESPONSE = (
+    "Entiendo que eso puede sentirse muy pesado. "
+    "Podés empezar por hacer una pausa corta y elegir una sola acción pequeña para ahora. "
+    "¿Qué es lo que más te está costando en este momento?"
 )
 
 
@@ -46,42 +46,22 @@ def _extract_text(response):
         return ""
 
 
-def _is_too_short(text):
-    return len(text.strip()) < 120
-
-
 def _looks_incomplete(text):
     cleaned = text.strip()
 
     if not cleaned:
         return True
 
-    if cleaned[-1] in ".!?¿¡":
-        return False
-
-    incomplete_endings = (
-        " de",
-        " que",
-        " con",
-        " para",
-        " por",
-        " en",
-        " y",
-        " o",
-        " como",
-        " intentar",
-        " porque",
-        " pero",
-    )
-
-    return cleaned.lower().endswith(incomplete_endings)
+    return cleaned[-1] not in ".!?¿¡"
 
 
 def _normalize_response(text):
-    if _is_too_short(text) or _looks_incomplete(text):
-        return FALLBACK_SHORT_RESPONSE
+    cleaned = text.strip()
 
-    return text.strip()
+    if len(cleaned) < 80 or _looks_incomplete(cleaned):
+        return FALLBACK_RESPONSE
+
+    return cleaned
 
 
 def ask_gemini(message):
@@ -103,8 +83,8 @@ def ask_gemini(message):
             contents=message.strip(),
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
-                temperature=0.4,
-                max_output_tokens=420,
+                temperature=0.2,
+                max_output_tokens=160,
             ),
         )
 
