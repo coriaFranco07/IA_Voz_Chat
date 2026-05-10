@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .services import ask_llama
+from .services import ask_gemini
 
 
 def ai_chat(request):
@@ -10,7 +10,7 @@ def ai_chat(request):
         user_message = request.POST.get("message", "").strip()
 
         if user_message:
-            response_text = ask_llama(user_message)
+            response_text = ask_gemini(user_message)
         else:
             response_text = "Escribí algo para que pueda acompañarte."
 
