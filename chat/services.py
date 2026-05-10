@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
 
 SYSTEM_PROMPT = """
@@ -48,7 +48,7 @@ def ask_gemini(message):
         )
 
         elapsed = time.perf_counter() - start_time
-        print(f"Tiempo Gemini: {elapsed:.2f} segundos")
+        print(f"Tiempo Gemini: {elapsed:.2f} segundos | Modelo: {GEMINI_MODEL}")
 
         if not response.text:
             return "No pude generar una respuesta en este momento."
@@ -57,4 +57,4 @@ def ask_gemini(message):
 
     except Exception as error:
         print(f"Error Gemini: {error}")
-        return "Ocurrió un error al consultar Google Gemini. Verificá tu API key y conexión a internet."
+        return "Ocurrió un error al consultar Google Gemini. Probá cambiando GEMINI_MODEL en .env a gemini-2.0-flash o gemini-1.5-flash."
