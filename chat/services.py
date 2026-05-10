@@ -1,3 +1,5 @@
+import time
+
 import requests
 
 
@@ -6,12 +8,8 @@ OLLAMA_MODEL = "phi3:mini"
 
 
 SYSTEM_PROMPT = """
-Sos un asistente emocional cálido y empático.
-No diagnosticás enfermedades.
-No reemplazás terapia profesional.
-No recomendás medicación.
-Usás escucha activa, preguntas simples y técnicas CBT básicas.
-Respondé siempre en español, de forma breve, clara y humana.
+Sos un asistente conversacional en español.
+Respondé de forma breve, clara y amable.
 """
 
 
@@ -19,7 +17,7 @@ def ask_llama(message):
     """Envía un mensaje a Ollama y devuelve una respuesta segura para mostrar en pantalla."""
 
     if not message or not message.strip():
-        return "Contame un poco cómo te estás sintiendo."
+        return "Escribí un mensaje para comenzar."
 
     payload = {
         "model": OLLAMA_MODEL,
@@ -35,17 +33,23 @@ def ask_llama(message):
         ],
         "stream": False,
         "options": {
-            "num_predict": 90,
-            "temperature": 0.6,
+            "num_predict": 60,
+            "temperature": 0.5,
         },
     }
 
     try:
+        start_time = time.perf_counter()
+
         response = requests.post(
             OLLAMA_URL,
             json=payload,
             timeout=60,
         )
+
+        elapsed = time.perf_counter() - start_time
+        print(f"Tiempo Ollama: {elapsed:.2f} segundos")
+
         response.raise_for_status()
 
         data = response.json()
