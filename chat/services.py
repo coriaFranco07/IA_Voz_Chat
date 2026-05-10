@@ -8,8 +8,11 @@ OLLAMA_MODEL = "phi3:mini"
 
 
 SYSTEM_PROMPT = """
-Sos un asistente conversacional en español.
-Respondé de forma breve, clara y amable.
+Sos un asistente de acompañamiento emocional en español.
+No diagnosticás ni reemplazás atención profesional.
+Respondé con empatía, breve y completo.
+No hagas listas largas.
+Terminá siempre con una pregunta simple para acompañar.
 """
 
 
@@ -33,7 +36,7 @@ def ask_llama(message):
         ],
         "stream": False,
         "options": {
-            "num_predict": 60,
+            "num_predict": 140,
             "temperature": 0.5,
         },
     }
