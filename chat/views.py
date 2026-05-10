@@ -3,15 +3,22 @@ from .services import ask_llama
 
 
 def ai_chat(request):
-
     response_text = None
+    user_message = ""
 
     if request.method == "POST":
+        user_message = request.POST.get("message", "").strip()
 
-        message = request.POST.get("message")
+        if user_message:
+            response_text = ask_llama(user_message)
+        else:
+            response_text = "Escribí algo para que pueda acompañarte."
 
-        response_text = ask_llama(message)
-
-    return render(request, "ai_chat.html", {
-        "response": response_text
-    })
+    return render(
+        request,
+        "ai_chat.html",
+        {
+            "response": response_text,
+            "message": user_message,
+        },
+    )
