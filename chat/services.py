@@ -1,10 +1,14 @@
+import os
 import time
 
-import requests
+import google.generativeai as genai
+from dotenv import load_dotenv
 
 
-OLLAMA_URL = "http://localhost:11434/api/chat"
-OLLAMA_MODEL = "phi3:mini"
+load_dotenv()
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
 
 
 SYSTEM_PROMPT = """
@@ -16,59 +20,41 @@ Terminá siempre con una pregunta simple para acompañar.
 """
 
 
-def ask_llama(message):
-    """Envía un mensaje a Ollama y devuelve una respuesta segura para mostrar en pantalla."""
+def ask_gemini(message):
+    """Envía un mensaje a Google Gemini y devuelve una respuesta segura para mostrar en pantalla."""
 
     if not message or not message.strip():
         return "Escribí un mensaje para comenzar."
 
-    payload = {
-        "model": OLLAMA_MODEL,
-        "messages": [
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT,
-            },
-            {
-                "role": "user",
-                "content": message.strip(),
-            },
-        ],
-        "stream": False,
-        "options": {
-            "num_predict": 140,
-            "temperature": 0.5,
-        },
-    }
+    if not GEMINI_API_KEY:
+        return "Falta configurar GEMINI_API_KEY en el archivo .env."
 
     try:
         start_time = time.perf_counter()
 
-        response = requests.post(
-            OLLAMA_URL,
-            json=payload,
-            timeout=60,
+        genai.configure(api_key=GEMINI_API_KEY)
+
+        model = genai.GenerativeModel(
+            model_name=GEMINI_MODEL,
+            system_instruction=SYSTEM_PROMPT,
+        )
+
+        response = model.generate_content(
+            message.strip(),
+            generation_config={
+                "temperature": 0.5,
+                "max_output_tokens": 180,
+            },
         )
 
         elapsed = time.perf_counter() - start_time
-        print(f"Tiempo Ollama: {elapsed:.2f} segundos")
+        print(f"Tiempo Gemini: {elapsed:.2f} segundos")
 
-        response.raise_for_status()
+        if not response.text:
+            return "No pude generar una respuesta en este momento."
 
-        data = response.json()
-        return data.get("message", {}).get(
-            "content",
-            "No pude generar una respuesta en este momento.",
-        )
+        return response.text.strip()
 
-    except requests.exceptions.ConnectionError:
-        return "No pude conectarme con Ollama. Verificá que esté abierto ejecutando: ollama run phi3:mini"
-
-    except requests.exceptions.Timeout:
-        return "La IA tardó demasiado en responder. Probá con un mensaje más corto."
-
-    except requests.exceptions.RequestException:
-        return "Ollama respondió con un error. Verificá que el modelo phi3:mini esté funcionando."
-
-    except Exception:
-        return "Ocurrió un error inesperado al consultar la IA."
+    except Exception as error:
+        print(f"Error Gemini: {error}")
+        return "Ocurrió un error al consultar Google Gemini. Verificá tu API key y conexión a internet."
