@@ -17,8 +17,29 @@ Sos un asistente de acompañamiento emocional en español.
 No diagnosticás ni reemplazás atención profesional.
 Respondé con empatía, breve y completo.
 No hagas listas largas.
+Dá una respuesta cerrada de 4 a 7 oraciones.
 Terminá siempre con una pregunta simple para acompañar.
 """
+
+
+def _extract_text(response):
+    """Extrae texto de Gemini de forma tolerante."""
+    try:
+        if response.text:
+            return response.text.strip()
+    except Exception:
+        pass
+
+    try:
+        parts = response.candidates[0].content.parts
+        text = "".join(part.text for part in parts if getattr(part, "text", None))
+        return text.strip()
+    except Exception:
+        return ""
+
+
+def _is_too_short(text):
+    return len(text.strip()) < 80
 
 
 def ask_gemini(message):
@@ -40,18 +61,26 @@ def ask_gemini(message):
             contents=message.strip(),
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
-                temperature=0.5,
-                max_output_tokens=180,
+                temperature=0.4,
+                max_output_tokens=320,
             ),
         )
 
         elapsed = time.perf_counter() - start_time
         print(f"Tiempo Gemini: {elapsed:.2f} segundos | Modelo: {GEMINI_MODEL}")
 
-        if not response.text:
+        response_text = _extract_text(response)
+
+        if not response_text:
             return "No pude generar una respuesta en este momento."
 
-        return response.text.strip()
+        if _is_too_short(response_text):
+            return (
+                response_text
+                + " Entiendo que esto puede sentirse pesado. No tenés que resolver todo ahora; podemos empezar por poner en palabras qué es lo que más te está afectando. ¿Querés contarme qué pasó hoy?"
+            )
+
+        return response_text
 
     except Exception as error:
         error_text = str(error)
