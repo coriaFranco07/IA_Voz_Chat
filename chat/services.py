@@ -1,14 +1,15 @@
 import os
 import time
 
-import google.generativeai as genai
 from dotenv import load_dotenv
+from google import genai
+from google.genai import types
 
 
 load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 
 SYSTEM_PROMPT = """
@@ -32,19 +33,16 @@ def ask_gemini(message):
     try:
         start_time = time.perf_counter()
 
-        genai.configure(api_key=GEMINI_API_KEY)
+        client = genai.Client(api_key=GEMINI_API_KEY)
 
-        model = genai.GenerativeModel(
-            model_name=GEMINI_MODEL,
-            system_instruction=SYSTEM_PROMPT,
-        )
-
-        response = model.generate_content(
-            message.strip(),
-            generation_config={
-                "temperature": 0.5,
-                "max_output_tokens": 180,
-            },
+        response = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=message.strip(),
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+                temperature=0.5,
+                max_output_tokens=180,
+            ),
         )
 
         elapsed = time.perf_counter() - start_time
@@ -56,5 +54,13 @@ def ask_gemini(message):
         return response.text.strip()
 
     except Exception as error:
-        print(f"Error Gemini: {error}")
-        return "Ocurrió un error al consultar Google Gemini. Probá cambiando GEMINI_MODEL en .env a gemini-2.0-flash o gemini-1.5-flash."
+        error_text = str(error)
+        print(f"Error Gemini: {error_text}")
+
+        if "429" in error_text or "quota" in error_text.lower():
+            return "Google Gemini indicó que no hay cuota disponible para este modelo o API key. Probá otro modelo en .env, por ejemplo GEMINI_MODEL=gemini-2.5-flash-lite, o revisá la cuota del proyecto en Google AI Studio."
+
+        if "404" in error_text or "not found" in error_text.lower():
+            return "El modelo configurado no está disponible para esta API key. Probá cambiando GEMINI_MODEL en .env a gemini-2.5-flash o gemini-2.5-flash-lite."
+
+        return "Ocurrió un error al consultar Google Gemini. Verificá tu API key, el modelo configurado y la conexión a internet."
