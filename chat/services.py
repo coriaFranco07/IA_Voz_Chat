@@ -66,7 +66,6 @@ def ask_openai(message):
             model=OPENAI_MODEL,
             instructions=SYSTEM_PROMPT,
             input=message.strip(),
-            temperature=0.2,
             max_output_tokens=160,
         )
 
