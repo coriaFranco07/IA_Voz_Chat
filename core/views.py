@@ -1,7 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+
 
 def home(request):
     return render(request, 'home.html')
 
+
 def chat_view(request):
-    return render(request, 'chat.html')
+    return redirect('ai-chat')
