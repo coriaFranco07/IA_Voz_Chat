@@ -1,6 +1,5 @@
-from email.mime import message
-
 from django.shortcuts import render
+
 from .services import ask_openai
 
 
