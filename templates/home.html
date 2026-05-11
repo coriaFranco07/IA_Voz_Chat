@@ -6,22 +6,41 @@ Inicio
 
 {% block content %}
 
-<div class="min-h-screen flex items-center justify-center">
+<div class="min-h-screen flex items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(45,212,191,0.14),_transparent_35%),radial-gradient(circle_at_bottom,_rgba(99,102,241,0.16),_transparent_40%)] px-6">
 
-    <div class="text-center">
+    <div class="max-w-3xl text-center">
 
-        <h1 class="text-6xl font-bold mb-6">
+        <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-3xl bg-white text-3xl text-black shadow-2xl shadow-black/30">
+            ✦
+        </div>
+
+        <p class="mb-4 text-xs uppercase tracking-[0.35em] text-teal-300">
+            OpenAI + Django
+        </p>
+
+        <h1 class="text-5xl font-bold leading-tight md:text-7xl">
             IA Voz Chat
         </h1>
 
-        <p class="text-zinc-400 text-xl mb-8">
-            Tu asistente emocional inteligente
+        <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-400 md:text-xl">
+            Un asistente emocional de prueba para conversar de forma simple, cálida y segura.
         </p>
 
-        <a href="/chat/"
-           class="bg-white text-black px-6 py-3 rounded-xl font-semibold hover:scale-105 transition">
-            Comenzar
-        </a>
+        <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <a href="/ai/"
+               class="rounded-2xl bg-white px-7 py-4 font-semibold text-black transition hover:scale-105">
+                Comenzar conversación
+            </a>
+
+            <a href="/admin/"
+               class="rounded-2xl border border-white/10 px-7 py-4 font-semibold text-zinc-300 transition hover:bg-white/5">
+                Panel admin
+            </a>
+        </div>
+
+        <p class="mx-auto mt-8 max-w-xl text-sm leading-6 text-zinc-500">
+            Esta app no reemplaza atención profesional. Si hay riesgo inmediato, contactá a emergencias o a una persona de confianza.
+        </p>
 
     </div>
 
