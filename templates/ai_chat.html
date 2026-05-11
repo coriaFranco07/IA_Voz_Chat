@@ -19,7 +19,7 @@ IA Emocional
                 </div>
                 <h1 class="text-2xl font-bold">IA Voz Chat</h1>
                 <p class="mt-2 text-sm leading-6 text-zinc-400">
-                    Acompañamiento emocional con IA, pensado para conversar de forma simple y segura.
+                    Acompañamiento emocional con OpenAI, pensado para conversar de forma simple y segura.
                 </p>
             </div>
 
@@ -41,7 +41,7 @@ IA Emocional
 
             <div class="mt-auto rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-zinc-400">
                 <p class="font-medium text-zinc-200">Modo actual</p>
-                <p class="mt-1">Google Gemini API</p>
+                <p class="mt-1">OpenAI Responses API</p>
             </div>
 
         </aside>
@@ -49,7 +49,6 @@ IA Emocional
         <!-- Main Chat -->
         <main class="flex flex-1 flex-col">
 
-            <!-- Header mobile/desktop -->
             <header class="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/70 px-5 py-4 backdrop-blur-xl">
                 <div class="mx-auto flex max-w-4xl items-center justify-between">
                     <div>
@@ -62,7 +61,6 @@ IA Emocional
                 </div>
             </header>
 
-            <!-- Messages -->
             <section class="flex-1 overflow-y-auto px-5 py-8">
                 <div class="mx-auto max-w-4xl space-y-6">
 
@@ -79,15 +77,15 @@ IA Emocional
                             </p>
 
                             <div class="mt-8 grid gap-3 md:grid-cols-3">
-                                <div class="rounded-2xl border border-white/10 bg-zinc-900/70 p-4 text-sm text-zinc-300">
+                                <button type="button" onclick="document.querySelector('textarea[name=message]').value='Estoy ansioso por la facultad'" class="rounded-2xl border border-white/10 bg-zinc-900/70 p-4 text-left text-sm text-zinc-300 transition hover:bg-zinc-800">
                                     “Estoy ansioso por la facultad”
-                                </div>
-                                <div class="rounded-2xl border border-white/10 bg-zinc-900/70 p-4 text-sm text-zinc-300">
+                                </button>
+                                <button type="button" onclick="document.querySelector('textarea[name=message]').value='Hoy me siento bajoneado'" class="rounded-2xl border border-white/10 bg-zinc-900/70 p-4 text-left text-sm text-zinc-300 transition hover:bg-zinc-800">
                                     “Hoy me siento bajoneado”
-                                </div>
-                                <div class="rounded-2xl border border-white/10 bg-zinc-900/70 p-4 text-sm text-zinc-300">
+                                </button>
+                                <button type="button" onclick="document.querySelector('textarea[name=message]').value='Necesito ordenar mis pensamientos'" class="rounded-2xl border border-white/10 bg-zinc-900/70 p-4 text-left text-sm text-zinc-300 transition hover:bg-zinc-800">
                                     “Necesito ordenar mis pensamientos”
-                                </div>
+                                </button>
                             </div>
                         </div>
                     {% endif %}
@@ -115,7 +113,6 @@ IA Emocional
                 </div>
             </section>
 
-            <!-- Composer -->
             <footer class="border-t border-white/10 bg-zinc-950/80 px-5 py-5 backdrop-blur-xl">
                 <form method="POST" class="mx-auto max-w-4xl" onsubmit="const btn=this.querySelector('button[type=submit]'); btn.disabled=true; btn.innerText='Pensando...';">
                     {% csrf_token %}
