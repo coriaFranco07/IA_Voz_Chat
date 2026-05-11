@@ -2,8 +2,7 @@ import os
 import time
 
 from dotenv import load_dotenv
-from google import genai
-from google.genai import types
+from openai import OpenAI
 
 
 load_dotenv()
@@ -31,22 +30,6 @@ FALLBACK_RESPONSE = (
 )
 
 
-def _extract_text(response):
-    """Extrae texto de Gemini de forma tolerante."""
-    try:
-        if response.text:
-            return response.text.strip()
-    except Exception:
-        pass
-
-    try:
-        parts = response.candidates[0].content.parts
-        text = "".join(part.text for part in parts if getattr(part, "text", None))
-        return text.strip()
-    except Exception:
-        return ""
-
-
 def _looks_incomplete(text):
     cleaned = text.strip()
 
@@ -59,14 +42,14 @@ def _looks_incomplete(text):
 def _normalize_response(text):
     cleaned = text.strip()
 
-    if len(cleaned) < 80 or _looks_incomplete(cleaned):
+    if len(cleaned) < 20 or _looks_incomplete(cleaned):
         return FALLBACK_RESPONSE
 
     return cleaned
 
 
-def ask_gemini(message):
-    """Envía un mensaje a Google Gemini y devuelve una respuesta segura para mostrar en pantalla."""
+def ask_openai(message):
+    """Envía un mensaje a OpenAI y devuelve una respuesta segura para mostrar en pantalla."""
 
     if not message or not message.strip():
         return "Escribí un mensaje para comenzar."
@@ -77,22 +60,20 @@ def ask_gemini(message):
     try:
         start_time = time.perf_counter()
 
-        client = genai.Client(api_key=OPENAI_API_KEY)
+        client = OpenAI(api_key=OPENAI_API_KEY)
 
-        response = client.models.generate_content(
+        response = client.responses.create(
             model=OPENAI_MODEL,
-            contents=message.strip(),
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                temperature=0.2,
-                max_output_tokens=160,
-            ),
+            instructions=SYSTEM_PROMPT,
+            input=message.strip(),
+            temperature=0.2,
+            max_output_tokens=160,
         )
 
         elapsed = time.perf_counter() - start_time
-        print(f"Tiempo OPENAI: {elapsed:.2f} segundos | Modelo: {OPENAI_MODEL}")
+        print(f"Tiempo OpenAI: {elapsed:.2f} segundos | Modelo: {OPENAI_MODEL}")
 
-        response_text = _extract_text(response)
+        response_text = getattr(response, "output_text", "") or ""
 
         if not response_text:
             return "No pude generar una respuesta en este momento."
@@ -101,12 +82,24 @@ def ask_gemini(message):
 
     except Exception as error:
         error_text = str(error)
-        print(f"Error OPENAI: {error_text}")
+        print(f"Error OpenAI: {error_text}")
 
         if "429" in error_text or "quota" in error_text.lower():
-            return "OpenAI indicó que no hay cuota disponible para este modelo o API key. Probá otro modelo en .env, por ejemplo OPENAI_MODEL=gpt-5.5, o revisá la cuota del proyecto en OpenAI Playground."
+            return (
+                "OpenAI indicó que no hay cuota disponible para este modelo o API key. "
+                "Probá otro modelo en .env o revisá la cuota del proyecto en OpenAI."
+            )
 
         if "404" in error_text or "not found" in error_text.lower():
-            return "El modelo configurado no está disponible para esta API key. Probá cambiando OPENAI_MODEL en .env a gpt-5.5 o gpt-4."
+            return (
+                "El modelo configurado no está disponible para esta API key. "
+                "Probá cambiando OPENAI_MODEL en .env."
+            )
+
+        if "api key" in error_text.lower() or "authentication" in error_text.lower():
+            return (
+                "La API key de OpenAI falta o no es válida. "
+                "Verificá OPENAI_API_KEY en el archivo .env."
+            )
 
         return "Ocurrió un error al consultar OpenAI. Verificá tu API key, el modelo configurado y la conexión a internet."

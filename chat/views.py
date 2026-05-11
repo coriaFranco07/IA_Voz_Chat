@@ -1,5 +1,7 @@
+from email.mime import message
+
 from django.shortcuts import render
-from .services import ask_gemini
+from .services import ask_openai
 
 
 def ai_chat(request):
@@ -10,7 +12,7 @@ def ai_chat(request):
         user_message = request.POST.get("message", "").strip()
 
         if user_message:
-            response_text = ask_gemini(user_message)
+            response_text = ask_openai(user_message)
         else:
             response_text = "Escribí algo para que pueda acompañarte."
 
